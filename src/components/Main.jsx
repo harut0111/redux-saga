@@ -1,49 +1,33 @@
-import React from 'react';
-import { connect } from "react-redux"
-import * as CONST from '../redux/constants/index'
+import React from "react";
+import { connect } from "react-redux";
+import { sendData, sendDataAsync, sendErrorAsync } from "../redux/actions";
 
-const Main = (props) => {
-    return (
-        <div className='mainComp'>
-            <h1>Redux Saga</h1>
-            <button onClick={props.increment}>Increment</button>
-            {' '}
-            <button onClick={props.decrement}>Decrement</button>
-            <hr />
-            <button onClick={props.incrementAsync} >Increment after 2 second</button>
-            {' '}
-            <button onClick={props.decrementAsync}>Decrement after 2 second</button>
-            <p><i>this saga will take every action</i></p>
-            <h1>Count: {props.state}</h1>
-        </div>
-    )
-}
+const Main = ({ data, sendData, sendDataAsync, sendErrorAsync }) => {
+  const textRef = React.useRef(null);
+  return (
+    <div className="mainComp">
+      <h1>Redux Saga</h1>
+      <input type="text" ref={textRef}></input>
+      <button onClick={() => sendData(textRef.current.value)}>Send Data</button>
+      <button onClick={() => sendDataAsync(textRef.current.value)}>
+        Send Data async(2 second)
+      </button>
+      <button onClick={sendErrorAsync}>Send Error async(1 second)</button>
+      <hr />
+      <p>
+        <i>this saga will take every action</i>
+      </p>
+      <h1>Data: {data}</h1>
+    </div>
+  );
+};
 
-const mapStateToProps = (state) => {
-    return { state }
-}
+const mapStateToProps = (state) => ({ data: state.data });
 
-const mapDispatchToProps = (dispatch) => {
-    return {
-        increment: () => {
-            const action = {type: CONST.INCREMENT};
-            dispatch(action);
-        },
-        decrement: () => {
-            const action = {type: CONST.DECREMENT};
-            dispatch(action);
-        },
-        incrementAsync: () => {
-            const action = {type: CONST.INCREMENT_ASYNC};
-            dispatch(action);
-        },
-        decrementAsync: () => {
-            const action =  {type: CONST.DECREMENT_ASYNC};
-            dispatch(action);
-        }
-    }
-}
-
-
+const mapDispatchToProps = {
+  sendData,
+  sendDataAsync,
+  sendErrorAsync,
+};
 
 export default connect(mapStateToProps, mapDispatchToProps)(Main);

@@ -1,30 +1,31 @@
-import { put, takeEvery, call, all } from 'redux-saga/effects'
-import * as CONST from '../constants/index';
+import { put, takeEvery, call, all } from "redux-saga/effects";
+import * as actionTypes from "../../constants/actionTypes";
 // also  try takeLatest
 
-const delay = (ms) => new Promise(res => setTimeout(res, ms));
+const delay = (ms, action) =>
+  new Promise((res, rej) => {
+    if (action.type === actionTypes.SEND_ERROR_ASYNC) {
+      setTimeout(() => rej(new Error("Test Error")), 1000);
+    }
+    setTimeout(() => res(action.payload), ms);
+  });
 
-function* incrementAsync() {
-    yield call(delay, 2000);
-    yield put({ type: CONST.INCREMENT });
+function* sendDataAsync(action) {
+  try {
+    const data = yield call(delay, 2000, action);
+    yield put({ type: actionTypes.SEND_DATA, payload: data });
+  } catch (error) {
+    yield put({ type: actionTypes.SEND_ERROR, payload: error.message });
+  }
 }
 
-function* decrementAsync() {
-    yield call(delay, 2000);
-    yield put({ type: CONST.DECREMENT });
+function* watchSendDataAsync() {
+  yield takeEvery(actionTypes.SEND_DATA_ASYNC, sendDataAsync);
 }
-
-function* watchIncrementAsync() {
-    yield takeEvery(CONST.INCREMENT_ASYNC, incrementAsync);
-}
-
-function* watchDecrementAsync() {
-    yield takeEvery(CONST.DECREMENT_ASYNC, decrementAsync);
+function* watchSendErrorAsync() {
+  yield takeEvery(actionTypes.SEND_ERROR_ASYNC, sendDataAsync);
 }
 
 export default function* rootSaga() {
-    yield all([ 
-        watchIncrementAsync(),
-        watchDecrementAsync()
-    ])
+  yield all([watchSendDataAsync(), watchSendErrorAsync()]);
 }
